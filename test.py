@@ -87,7 +87,7 @@ def proportion_vegetation():
     mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
     result = cv2.bitwise_and(img, img, mask = mask)
-    percent = cv2.countNonZero(mask)/(2592*1952)
+    percent = (cv2.countNonZero(mask)/(2592*1952)) * 100
     print(str(percent))
 
 proportion_vegetation()
