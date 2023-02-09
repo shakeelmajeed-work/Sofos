@@ -20,6 +20,7 @@ def writedata(percent):
     with open('data.csv', 'w') as f:
         writer = csv.writer(f)
         data = [(percent),(coordinate_pair),(nearest_city[0]["name"])]
+        writer.writerow(data)
 
 
 
