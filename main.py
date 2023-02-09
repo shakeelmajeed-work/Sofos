@@ -41,7 +41,7 @@ if __name__ == "__main__":
         ndvi_contrasted = contrast_stretch(ndvi) #in greyscale which is hard for us to decipher
         convert_colourscale(ndvi_contrasted, i)
 
-        coordinates()
+        writedata(percent)
 
         # Update the current time
         now_time = datetime.now()
