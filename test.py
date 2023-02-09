@@ -16,7 +16,7 @@ camera.resolution = (2592, 1952)
 
 def writedata(percent):
     coordinate_pair = (location.latitude.degrees, location.longitude.degrees)
-    nearest_city = reverse_geocoder.search(coordinate_pair
+    nearest_city = reverse_geocoder.search(coordinate_pair)
     with open('data.csv', 'w') as f:
         writer = csv.writer(f)
         data = [(percent),(coordinate_pair),(nearest_city[0]["name"])]
