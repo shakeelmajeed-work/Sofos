@@ -8,9 +8,16 @@ import numpy as np
 import picamera.array
 from orbit import ISS
 import reverse_geocoder
+from fastiecm import fastiecm
+import csv
 
 camera = PiCamera()
 camera.resolution = (2592, 1952)
+
+def writedata(percent, coordinate_pair, nearest_city):
+    with open('data.csv', 'w') as f:
+        writer = csv.writer(f)
+        data = [(percent),(coordinate_pair),(nearest_city[0])]
 
 
 
@@ -21,25 +28,6 @@ def capture_image(i):
 
     image = ('/home/astropi/Documents/Sofos/images/image%s.jpg' % i)
 
-    camera.capture(stream, format='bgr', use_video_port=True)
-    original = stream.array
-    calcpercentage()
-    print(original)
-    #manipulate_image(image)
-    
-
-    
-
-    return original
-
-#function takes in image path and reads it in, resizes it and gets array from it 
-def manipulate_image(image):
-    img = cv2.imread(image)
-    print(img)
-    img = np.array(image, dtype=float)/float(255) #NOT WORKING 
-    
-
-
 def coordinates():
     f = open('data.csv','w')
     location = ISS.coordinates() #object
@@ -48,26 +36,67 @@ def coordinates():
     nearest_city = reverse_geocoder.search(coordinate_pair) #object with data of the nearest city to ISS coordinates
 
     row = str(coordinate_pair[0])+','+str(coordinate_pair[1])+','+nearest_city[0]["name"]
+    print(row)
 
     f.write(row)
+    f.write('\n')
     f.close()
 
-def calcpercentage():
+
+
+#"/home/astropi/Documents/Sofos/images/image1.jpg"
+
+#def process_ndvi(i):
+
+
+def display(image, image_name): #use as reference for when we want to see what we are doing to an image
+    image = np.array(image, dtype=float)/float(255) #remember to convert values within since these are floats
+    shape = image.shape
+    height = int(shape[0] / 2)
+    width = int(shape[1] / 2)
+    image = cv2.resize(image, (width, height))
+
+
+def contrast_stretch(image): #to calculate NDVI need to increase contrast of images
+    in_min = np.percentile(image, 5)
+    in_max = np.percentile(image, 95)
+
+    out_min = 0.0
+    out_max = 255.0
+
+    out = image - in_min
+    out *= ((out_min - out_max) / (in_min - in_max))
+    out += in_min
+
+    return out
+
+def calc_ndvi(image):
+    b, g, r = cv2.split(image)
+    bottom = (r.astype(float) + b.astype(float))
+    bottom[bottom==0] = 0.01
+    ndvi = (b.astype(float) - r) / bottom
+    return ndvi
+
+def convert_colourscale(contrasted_image, i):
+    color_mapped_prep = contrasted_image.astype(np.uint8)
+    color_mapped_image = cv2.applyColorMap(color_mapped_prep, fastiecm)
+    cv2.imwrite('/home/astropi/Documents/Sofos/images/image%s.jpg' % i, color_mapped_image)
+
+def proportion_vegetation():
     img = cv2.imread('/home/astropi/Documents/Sofos/images/image1.jpg')
-    green = [130, 158, 0]
-    diff = 20
 
-    bounds = [([green[2], green[1]-diff, green[0]-diff], [green[2]+diff, green[1]+diff, green[0]+diff])]
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    for (low, high) in bounds:
-        low = np.array(low)
-        high = np.array(high)
+    lower_bound = np.array([15,50,180])
+    upper_bound = np.array([40,255,255])
 
-        mask = cv2.inRange(img, low, high)
-        cv2.imshow("binary mask", mask)
-        cv2.waitKey(0)
-        output = cv2.bitwise_and(img, img, mask=mask)
+    mask = cv2.inRange(hsv, lower_bound, upper_bound)
 
-        percentage_green = ((cv2.countNonZero(mask))/(img.size)) * 100
-        print(str(percentage_green))
+    result = cv2.bitwise_and(img, img, mask = mask)
+    percent = cv2.countNonZero(mask)/(2592*1952)
+    print(str(percent))
+
+proportion_vegetation()
+
+
 
