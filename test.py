@@ -14,10 +14,12 @@ import csv
 camera = PiCamera()
 camera.resolution = (2592, 1952)
 
-def writedata(percent, coordinate_pair, nearest_city):
+def writedata(percent):
+    coordinate_pair = (location.latitude.degrees, location.longitude.degrees)
+    nearest_city = reverse_geocoder.search(coordinate_pair
     with open('data.csv', 'w') as f:
         writer = csv.writer(f)
-        data = [(percent),(coordinate_pair),(nearest_city[0])]
+        data = [(percent),(coordinate_pair),(nearest_city[0]["name"])]
 
 
 
@@ -28,26 +30,9 @@ def capture_image(i):
 
     image = ('/home/astropi/Documents/Sofos/images/image%s.jpg' % i)
 
-def coordinates():
-    f = open('data.csv','w')
-    location = ISS.coordinates() #object
-    
-    coordinate_pair = (location.latitude.degrees, location.longitude.degrees)
-    nearest_city = reverse_geocoder.search(coordinate_pair) #object with data of the nearest city to ISS coordinates
-
-    row = str(coordinate_pair[0])+','+str(coordinate_pair[1])+','+nearest_city[0]["name"]
-    print(row)
-
-    f.write(row)
-    f.write('\n')
-    f.close()
-
 
 
 #"/home/astropi/Documents/Sofos/images/image1.jpg"
-
-#def process_ndvi(i):
-
 
 def display(image, image_name): #use as reference for when we want to see what we are doing to an image
     image = np.array(image, dtype=float)/float(255) #remember to convert values within since these are floats
