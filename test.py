@@ -15,6 +15,7 @@ camera = PiCamera()
 camera.resolution = (2592, 1952)
 
 def writedata(percent):
+    location = ISS.coordinates()
     coordinate_pair = (location.latitude.degrees, location.longitude.degrees)
     nearest_city = reverse_geocoder.search(coordinate_pair)
     with open('data.csv', 'w') as f:
@@ -33,7 +34,11 @@ def capture_image(i):
 
 
 
+
 #"/home/astropi/Documents/Sofos/images/image1.jpg"
+
+#def process_ndvi(i):
+
 
 def display(image, image_name): #use as reference for when we want to see what we are doing to an image
     image = np.array(image, dtype=float)/float(255) #remember to convert values within since these are floats
@@ -69,17 +74,17 @@ def convert_colourscale(contrasted_image, i):
     cv2.imwrite('/home/astropi/Documents/Sofos/images/image%s.jpg' % i, color_mapped_image)
 
 def proportion_vegetation():
-    img = cv2.imread('/home/astropi/Documents/Sofos/images/image1.jpg')
+    img = cv2.imread('/home/astropi/Documents/Sofos/images/green.jpg')
 
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    lower_bound = np.array([15,50,180])
-    upper_bound = np.array([40,255,255])
+    lower_bound = np.array([36,0,0])
+    upper_bound = np.array([86,255,255])
 
     mask = cv2.inRange(hsv, lower_bound, upper_bound)
 
     result = cv2.bitwise_and(img, img, mask = mask)
-    percent = cv2.countNonZero(mask)/(2592*1952)
+    percent = (cv2.countNonZero(mask)/(2592*1952)) * 100
     print(str(percent))
 
 proportion_vegetation()
