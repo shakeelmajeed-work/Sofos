@@ -29,7 +29,7 @@ if __name__ == "__main__":
         try:
             i = i+1
             capture_image(i)
-            directory = "/home/astropi/Documents/Sofos/images/image%s.jpg" % i
+            directory = "images/image%s.jpg" % i
 
             image = cv2.imread(directory)
             contrasted = contrast_stretch(image)
