@@ -1,7 +1,7 @@
 #This is the file for all of our custom functions
 #Write any functions here and import them into main.py so we can access and call them there 
 
-from picamera import PiCamera
+#from picamera import PiCamera
 from time import sleep
 import cv2
 import numpy as np
@@ -9,9 +9,19 @@ import picamera.array
 from orbit import ISS
 import reverse_geocoder
 from fastiecm import fastiecm
+import csv
 
 camera = PiCamera()
 camera.resolution = (2592, 1952)
+
+def writedata(percent):
+    location = ISS.coordinates()
+    coordinate_pair = (location.latitude.degrees, location.longitude.degrees)
+    nearest_city = reverse_geocoder.search(coordinate_pair)
+    with open('data.csv', 'w') as f:
+        writer = csv.writer(f)
+        data = (percent,coordinate_pair,nearest_city[0]["name"])
+        writer.writerow(data)
 
 
 
@@ -22,34 +32,12 @@ def capture_image(i):
 
     image = ('/home/astropi/Documents/Sofos/images/image%s.jpg' % i)
 
-def coordinates():
-    f = open('data.csv','w')
-    location = ISS.coordinates() #object
-    
-    coordinate_pair = (location.latitude.degrees, location.longitude.degrees)
-    nearest_city = reverse_geocoder.search(coordinate_pair) #object with data of the nearest city to ISS coordinates
-
-    row = str(coordinate_pair[0])+','+str(coordinate_pair[1])+','+nearest_city[0]["name"]
-    print(row)
-
-    f.write(row)
-    f.write('\n')
-    f.close()
-
-
-
-#"/home/astropi/Documents/Sofos/images/image1.jpg"
-
-#def process_ndvi(i):
-
-
 def display(image, image_name): #use as reference for when we want to see what we are doing to an image
     image = np.array(image, dtype=float)/float(255) #remember to convert values within since these are floats
     shape = image.shape
     height = int(shape[0] / 2)
     width = int(shape[1] / 2)
     image = cv2.resize(image, (width, height))
-
 
 def contrast_stretch(image): #to calculate NDVI need to increase contrast of images
     in_min = np.percentile(image, 5)
@@ -76,21 +64,17 @@ def convert_colourscale(contrasted_image, i):
     color_mapped_image = cv2.applyColorMap(color_mapped_prep, fastiecm)
     cv2.imwrite('/home/astropi/Documents/Sofos/images/image%s.jpg' % i, color_mapped_image)
 
-def proportion_vegetation():
-    img = cv2.imread('/home/astropi/Documents/Sofos/images/image1.jpg')
+def proportion_vegetation(directory):
+    img = cv2.imread(directory) #load in NDVI colourscaled image
 
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    lower_yellow = np.array([15,50,180])
-    upper_yellow = np.array([40,255,255])
+    lower_bound = np.array([36,0,0])
+    upper_bound = np.array([86,255,255])
 
-    mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+    mask = cv2.inRange(hsv, lower_bound, upper_bound) #create a mask that looks for all green coloured pixels (represent NDVI value above 0.5 which is what we require)
 
-    result = cv2.bitwise_and(img, img, mask = mask)
-    percent = cv2.countNonZero(mask)/(2592*1952)
-    print(str(percent))
+    #result = cv2.bitwise_and(img, img, mask = mask) #for reference
 
-proportion_vegetation()
-
-
-
+    percent = (cv2.countNonZero(mask)/(2592*1952)) * 100 #find proportion of white pixels (white pixels are pixels from original NDVI image that make it through the mask)
+    return percent
