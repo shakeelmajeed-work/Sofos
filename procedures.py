@@ -1,7 +1,7 @@
 #This is the file for all of our custom functions
 #Write any functions here and import them into main.py so we can access and call them there 
 
-#from picamera import PiCamera
+from picamera import PiCamera
 from time import sleep
 import cv2
 import numpy as np
