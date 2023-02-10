@@ -28,9 +28,9 @@ def writedata(percent):
 def capture_image(i):
     stream = picamera.array.PiRGBArray(camera)
     sleep(2)
-    camera.capture('/home/astropi/Documents/Sofos/images/image%s.jpg' % i)
+    camera.capture('images/image%s.jpg' % i)
 
-    image = ('/home/astropi/Documents/Sofos/images/image%s.jpg' % i)
+    image = ('images/image%s.jpg' % i)
 
 def display(image, image_name): #use as reference for when we want to see what we are doing to an image
     image = np.array(image, dtype=float)/float(255) #remember to convert values within since these are floats
@@ -62,7 +62,7 @@ def calc_ndvi(image):
 def convert_colourscale(contrasted_image, i):
     color_mapped_prep = contrasted_image.astype(np.uint8)
     color_mapped_image = cv2.applyColorMap(color_mapped_prep, fastiecm)
-    cv2.imwrite('/home/astropi/Documents/Sofos/images/image%s.jpg' % i, color_mapped_image)
+    cv2.imwrite('images/image%s.jpg' % i, color_mapped_image)
 
 def proportion_vegetation(directory):
     img = cv2.imread(directory) #load in NDVI colourscaled image
