@@ -20,7 +20,7 @@ def writedata(percent):
     nearest_city = reverse_geocoder.search(coordinate_pair)
     with open('data.csv', 'w') as f:
         writer = csv.writer(f)
-        data = (percent,coordinate_pair,nearest_city[0]["name"])
+        data = [percent,coordinate_pair,nearest_city[0]["name"]]
         writer.writerow(data)
 
 
